@@ -9,9 +9,9 @@ import os
 import myda
 from myda.utils import get_logger
 from myda.bmap_helper import get_latlng,convert_data
-from pyecharts.charts import Bar
-from pyecharts.charts import BMap
+from pyecharts.charts import Bar,BMap,Line,Pie
 from pyecharts import options as opts
+from pyecharts.globals import BMapType, ChartType
 
 logger = get_logger(__name__)
 
@@ -147,14 +147,44 @@ class Worker(QtCore.QThread):
             self.finished.emit(None)
 
 
+def pie(**kwargs):
+    df = kwargs['data_frame']
+    x = kwargs['x']
+    df = df.groupby(by=[x]).size()
+    height = str(int(0.6 * QtWidgets.QDesktopWidget().screenGeometry().height())) + 'px'
+    pie = (Pie(init_opts=opts.InitOpts(height=height))
+    .add("", [list(z) for z in zip(df.index.tolist(), df.tolist())])
+    .set_global_opts(
+        title_opts=opts.TitleOpts(title="饼图")
+        ,legend_opts=opts.LegendOpts(pos_bottom='1%')
+        ,)
+    .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
+    .render())
+
+def line(**kwargs):
+    df = kwargs['data_frame']
+    x = kwargs['x']
+    y = kwargs['y(sum)']
+    df = df[[x,y]].groupby(by=[x]).sum()
+    xvals = df.index.tolist()
+    yvals = df[y].tolist()
+    ystr = y.replace('(','[')
+    ystr = ystr.replace(')',']')
+    line = Line().add_xaxis(xvals).add_yaxis(ystr,yvals).set_global_opts(xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=40)))
+    line.render()
+
+
 def bar(**kwargs):
-    # bar = Bar().add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]).add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
-    bmap = BMap().add_schema(baidu_ak='t6FhPX8kta44hnWYUb9wN3sam3p2G6AG')
+    df = kwargs['data_frame']
+    x = kwargs['x']
+    df = df.groupby(by=[x]).size()
+    xvals = df.index.tolist()
+    yvals = df.tolist()
+    bar = Bar().add_xaxis(xvals).add_yaxis("数量", yvals)
     bar.render()
 
 
 def bmap(**kwargs):
-    print(kwargs)
     df = kwargs['data_frame']
     pos = kwargs['pos']
     value = kwargs['value']
@@ -163,20 +193,83 @@ def bmap(**kwargs):
     values = df[[pos,value]].values
 
     geo_coord_list = get_latlng(addresses)
-    # data = convert_data(values,geo_coord_map)
-
-    print(addresses)
-    print(values)
-    # print(data)
-
-    bmap = BMap(is_ignore_nonexistent_coord=True)
+    height = str(int(0.6 * QtWidgets.QDesktopWidget().screenGeometry().height()))+'px'
+    bmap = BMap(is_ignore_nonexistent_coord=True,init_opts=opts.InitOpts(height=height))
     for item in geo_coord_list:
-        bmap.add_coordinate(item[0],item[1],item[2])
+        bmap.add_coordinate(item[0],item[2],item[1])
 
-    bmap = BMap(is_ignore_nonexistent_coord=True)
-    bmap.set_global_opts(init_opts=opts.InitOpts(height='1000px'))
-    bmap.add_schema(baidu_ak='t6FhPX8kta44hnWYUb9wN3sam3p2G6AG',center=[104.114129, 37.550339])
-    # bmap.add(type_="effectScatter",series_name="仪器",data_pair=data,label_opts=opts.LabelOpts(formatter="{c}"))
+    bmap.add_schema(
+        baidu_ak='t6FhPX8kta44hnWYUb9wN3sam3p2G6AG'
+        ,center=[104.114129, 37.550339]
+        # ,map_style={
+        #             "styleJson": [
+        #                 {
+        #                     "featureType": "road",
+        #                     "elementType": "all",
+        #                     "stylers": {
+        #                         "lightness": 20
+        #                     }
+        #                 }, {
+        #                     "featureType": "highway",
+        #                     "elementType": "geometry",
+        #                     "stylers": {
+        #                         "visibility": "off"
+        #                     }
+        #                 }, {
+        #                     "featureType": "railway",
+        #                     "elementType": "all",
+        #                     "stylers": {
+        #                         "visibility": "off"
+        #                     }
+        #                 }, {
+        #                     "featureType": "local",
+        #                     "elementType": "labels",
+        #                     "stylers": {
+        #                         "visibility": "off"
+        #                     }
+        #                 }, {
+        #                     "featureType": "water",
+        #                     "elementType": "all",
+        #                     "stylers": {
+        #                         "color": "#d1e5ff"
+        #                     }
+        #                 }, {
+        #                     "featureType": "poi",
+        #                     "elementType": "labels",
+        #                     "stylers": {
+        #                         "visibility": "off"
+        #                     }
+        #                 }, {
+        #                     "featureType": "land",
+        #                     "elementType": "all",
+        #                     "stylers": {
+        #                         "color": "#cfe2f3ff",
+        #                         "lightness": -50,
+        #                         "saturation": -8
+        #                     }
+        #                 }, {
+        #                     "featureType": "water",
+        #                     "elementType": "all",
+        #                     "stylers": {
+        #                         "color": "#0b5394ff",
+        #                         "weight": "8",
+        #                         "lightness": 41,
+        #                         "saturation": 13
+        #                     }
+        #                 }
+        #             ]
+        #         }
+       )
+    bmap.add_control_panel(
+        copyright_control_opts=opts.BMapCopyrightTypeOpts(position=3),
+        maptype_control_opts=opts.BMapTypeControlOpts(
+            type_=BMapType.MAPTYPE_CONTROL_DROPDOWN
+        ),
+        scale_control_opts=opts.BMapScaleControlOpts(),
+        overview_map_opts=opts.BMapOverviewMapControlOpts(is_open=True),
+        navigation_control_opts=opts.BMapNavigationControlOpts(),
+        geo_location_control_opts=opts.BMapGeoLocationControlOpts(),
+    )
     bmap.add(type_="effectScatter"
              ,series_name="仪器"
              ,data_pair=values
@@ -186,97 +279,24 @@ def bmap(**kwargs):
 schemas = [Schema(name='bmap',
                   args=[ColumnArg(arg_name='pos'),
                         ColumnArg(arg_name='value')],
-                  label='Histogram',
+                  label='地图',
                   function=bmap,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-histogram.svg')),
-           Schema(name='scatter',
+                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/map.svg')),
+            Schema(name='bar',
                   args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='color'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Scatter',
+                        ColumnArg(arg_name='y(个数)')],
+                  label='柱图',
                   function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-scatter.svg')),
-           Schema(name='line',
+                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/bar.svg')),
+            Schema(name='pie',
+                  args=[ColumnArg(arg_name='x')],
+                  label='饼图',
+                  function=pie,
+                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/pie.svg')),
+            Schema(name='line',
                   args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='color'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Line',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-line.svg')),
-           Schema(name='bar',
-                  args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='color'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Bar',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-bar.svg')),
-           Schema(name='box',
-                  args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='color'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Box',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-box.svg')),
-           Schema(name='violin',
-                  args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='color'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Violin',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-violin.svg')),
-           Schema(name='scatter_3d',
-                  args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='z'),
-                        ColumnArg(arg_name='color')],
-                  label='Scatter 3D',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-scatter3d.svg')),
-           Schema(name='density_heatmap',
-                  args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='z'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Heatmap',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-heatmap.svg')),
-           Schema(name='density_contour',
-                  args=[ColumnArg(arg_name='x'),
-                        ColumnArg(arg_name='y'),
-                        ColumnArg(arg_name='z'),
-                        ColumnArg(arg_name='facet_row'),
-                        ColumnArg(arg_name='facet_col')],
-                  label='Contour',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-contour.svg')),
-           Schema(name='pie',
-                  args=[ColumnArg(arg_name='names'),
-                        ColumnArg(arg_name='values')],
-                  label='Pie',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-pie.svg')),
-           Schema(name='scatter_matrix',
-                  args=[ColumnArg(arg_name='dimensions'),
-                        ColumnArg(arg_name='color')],
-                  label='Splom',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/trace-type-splom.svg')),
-           Schema(name='word_cloud',
-                  args=[ColumnArg(arg_name='columns'),
-                        ],
-                  label='Word Cloud',
-                  function=bar,
-                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/word-cloud.png'))
-
+                        ColumnArg(arg_name='y(sum)')],
+                  label='线图',
+                  function=line,
+                  icon_path=os.path.join(myda.__path__[0], 'resources/images/plotly/line.svg'))
            ]

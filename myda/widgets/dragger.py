@@ -44,13 +44,14 @@ class Dragger(QtWidgets.QWidget):
         dest.setDefaultDropAction(QtCore.Qt.MoveAction)
 
         # Buttons
-        self.kwargs_button = QtWidgets.QPushButton("Custom Kwargs")
+        # self.kwargs_button = QtWidgets.QPushButton("Custom Kwargs")
         self.reset_button = QtWidgets.QPushButton("重置")
         self.finish_button = QtWidgets.QPushButton("完成")
 
         # Signals
         self.itemDropped.connect(self.apply_tree_settings)
         self.finish_button.clicked.connect(self.finish)
+        self.reset_button.clicked.connect(self.reset)
 
         # Layout
         self.source_tree_layout = QtWidgets.QVBoxLayout()
@@ -58,7 +59,7 @@ class Dragger(QtWidgets.QWidget):
         self.source_tree_layout.addWidget(self.source_tree)
 
         self.button_layout = QtWidgets.QHBoxLayout()
-        self.button_layout.addWidget(self.kwargs_button)
+        # self.button_layout.addWidget(self.kwargs_button)
         self.button_layout.addWidget(self.reset_button)
         self.button_layout.addWidget(self.finish_button)
 
@@ -76,6 +77,23 @@ class Dragger(QtWidgets.QWidget):
                                              [str(sources[i]), str(source_types[i])])
 
         #self.filter()
+
+    def reset(self):
+        self.remembered_values = {}
+        self.clear_tree()
+
+    # Clear tree items under each sections
+    def clear_tree(self):
+        root = self.dest_tree.invisibleRootItem()
+        to_delete = []
+        for i in range(root.childCount()):
+            child = root.child(i)
+            for j in range(child.childCount()):
+                sub_child = child.child(j)
+                to_delete.append(sub_child)
+
+        for item in to_delete:
+            sip.delete(item)
 
     class DestinationTree(QtWidgets.QTreeWidget):
         def dropEvent(self, e: QtGui.QDropEvent):
