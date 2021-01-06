@@ -29,7 +29,7 @@ def get_latlng(addresses):
         try:
             values = select_geo(address)
             if(values):
-               geo_coord_list.append(values)
+               geo_coord_list.append(values[0])
             else:
                 url = 'http://api.map.baidu.com/geocoding/v3/?address={}&output=json&ak={}'.format(address, ak)
                 s = __get_http_session(24,24,2)
@@ -41,8 +41,8 @@ def get_latlng(addresses):
                 geo_coord_list.append((address,lat,lng))
         except Exception as e:
             logger.error(e)
-        finally:
-            update_geo(geo_update_list)
+    if len(geo_update_list) > 0:
+        update_geo(geo_update_list)
 
     return geo_coord_list
 

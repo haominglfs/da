@@ -40,6 +40,7 @@ def select_geo(name):
     conn = sqlite3.connect('geo.db')
     logger.info("Opened database successfully")
     values = conn.execute(sql,(name,)).fetchall()
+    return values
 
 
 

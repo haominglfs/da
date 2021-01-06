@@ -58,9 +58,9 @@ Pygments==2.7.2
 pyinstaller==4.1
 pyinstaller-hooks-contrib==2020.11
 pynput==1.7.1
-pyobjc-core==6.2.2
-pyobjc-framework-Cocoa==6.2.2
-pyobjc-framework-Quartz==6.2.2
+# pyobjc-core==6.2.2
+# pyobjc-framework-Cocoa==6.2.2
+# pyobjc-framework-Quartz==6.2.2
 pyparsing==2.4.7
 PyQt5==5.15.2
 PyQt5-sip==12.8.1
