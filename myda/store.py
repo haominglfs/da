@@ -4,6 +4,7 @@ from typing import List, Union
 import pandas as pd
 from myda.utils import get_logger
 from PyQt5 import QtWidgets
+import  codecs
 from xlsx2csv import Xlsx2csv
 
 logger = get_logger(__name__)
@@ -36,7 +37,7 @@ class Store:
         elif path.endswith(".xlsx"):
             uppath = os.path.split(path)[0]
             filename = os.path.split(path)[1].split('.xlsx')[0]
-            Xlsx2csv(path, outputencoding="utf-8").convert(uppath+filename+".csv")
+            Xlsx2csv(path, outputencoding=codecs.BOM_UTF8).convert(uppath+filename+".csv")
             # Xlsx2csv(path, outputencoding="gbk").convert(uppath+filename+".csv")
             df = pd.read_csv(uppath+filename+".csv", engine='python')
             print(df)
