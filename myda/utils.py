@@ -5,7 +5,7 @@ def get_logger(logger_name=None):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter("PandasGUI %(levelname)s — %(name)s — %(message)s")
+    formatter = logging.Formatter("myda %(levelname)s — %(name)s — %(message)s")
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
