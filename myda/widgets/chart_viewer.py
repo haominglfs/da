@@ -1,4 +1,4 @@
-from pandasgui.utility import get_logger
+from myda.utils import get_logger
 from PyQt5 import QtCore, QtGui, QtWidgets, sip
 import os
 import sys
