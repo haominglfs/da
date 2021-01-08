@@ -32,15 +32,14 @@ class Store:
             logger.warning("Path is not a file: " + path)
         elif path.endswith(".csv"):
             filename = os.path.split(path)[1].split('.csv')[0]
-            df = pd.read_csv(path, engine='python')
+            df = pd.read_csv(path, engine='python',encoding='utf-8')
             self.add_dataframe(df, filename)
         elif path.endswith(".xlsx"):
             uppath = os.path.split(path)[0]
             filename = os.path.split(path)[1].split('.xlsx')[0]
-            Xlsx2csv(path, outputencoding=codecs.BOM_UTF8).convert(uppath+filename+".csv")
+            Xlsx2csv(path, outputencoding='utf-8').convert(uppath+filename+".csv")
             # Xlsx2csv(path, outputencoding="gbk").convert(uppath+filename+".csv")
-            df = pd.read_csv(uppath+filename+".csv", engine='python')
-            print(df)
+            df = pd.read_csv(uppath+filename+".csv", engine='python',encoding='utf-8')
             # for sheet_name in df_dict.keys():
             #     df_name = f"{filename} - {sheet_name}"
             #     self.add_dataframe(df_dict[sheet_name], df_name)
