@@ -16,9 +16,13 @@ if __name__=='__main__':
     # myda.dbutils.create_db()
     # myda.dbutils.create_table()
 
-    address = [('海门',121.15,31.89),('鄂尔多斯',109.781327, 39.608266)]
-    myda.dbutils.update_geo(address)
+    # address = [('海门',121.15,31.89),('鄂尔多斯',109.781327, 39.608266)]
+    # myda.dbutils.update_geo(address)
     # conn = sqlite3.connect('geo.db')
+    myda.dbutils.create_db()
+    myda.dbutils.create_table()
+
+
     # cursor = conn.execute(
     #     "SELECT id, name, lng, lat  from geo")
     #
@@ -29,7 +33,9 @@ if __name__=='__main__':
     #     print("lat = ", row[3],
     #           "\n")
 
-    print(myda.dbutils.select_geo(('海门', '鄂尔多斯')))
+    # print(myda.dbutils.select_geo(('海门', '鄂尔多斯')))
+
+
 
 
 

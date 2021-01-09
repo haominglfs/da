@@ -16,7 +16,7 @@ def create_table():
     logger.info("Opened database successfully")
     ## 创建一个表
     conn.execute('''
-        CREATE TABLE geo
+    CREATE TABLE IF NOT EXISTS geo
        (ID INTEGER PRIMARY KEY  AUTOINCREMENT   NOT NULL,
        NAME           TEXT    NOT NULL UNIQUE,
        LNG            REAL     NOT NULL,
